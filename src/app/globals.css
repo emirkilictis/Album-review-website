@@ -11,12 +11,11 @@
   --color-ink: #111111;
   --color-muted: #767676;
   --color-header: #111111;
-  --color-accent: #2b21c7;
+  --color-accent: #1800ac;
   --color-score-low: #d0342c;
 
   --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-serif: var(--font-serif-face), Georgia, "Times New Roman", serif;
-  --font-brand: var(--font-brand-face), "Arial Narrow", sans-serif;
 }
 
 html {

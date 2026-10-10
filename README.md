@@ -50,6 +50,7 @@ src/lib/db/         Drizzle schema + client (tables auto-created)
 src/lib/queries.ts  cached public queries and sorting/filtering helpers
 src/lib/auth.ts     password check + signed session cookie
 src/lib/site.ts     site name, tagline, social links
+src/assets/         logo images
 scripts/seed.ts     demo data
 ```
 
@@ -62,7 +63,9 @@ scripts/seed.ts     demo data
 - No custom domain; the free `.vercel.app` address is used.
 - Design follows the AItunes Reviews share cards (Pitchfork-style).
 
+- Covers come from Apple Music import or a pasted image link; no file upload needed.
+- The official logo is used in the header, footer, favicon and share image (`src/assets`, `src/app/icon.png`, `src/app/opengraph-image.png`).
+
 ## Open questions for the client
 
-- Do they need to upload cover images as files, or are image links / Apple Music import enough?
-- Can they send the logo as an image file (PNG/SVG) to replace the text logo?
+- About page text (the current copy is a placeholder).

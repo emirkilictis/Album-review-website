@@ -1,5 +1,8 @@
 import Form from "next/form";
+import Image from "next/image";
 import Link from "next/link";
+import logoWhite from "@/assets/logo-white.png";
+import logo from "@/assets/logo.png";
 import { SITE } from "@/lib/site";
 
 const NAV = [
@@ -9,13 +12,15 @@ const NAV = [
   { href: "/about", label: "About" },
 ];
 
-/** Text version of the AItunes Reviews logo. Swap for the real logo image when we have it. */
-export function Logo({ className = "", stacked = false }: { className?: string; stacked?: boolean }) {
+/** The AItunes Reviews logo (blue on white, or white for dark backgrounds). */
+export function Logo({ variant = "color", className = "" }: { variant?: "color" | "white"; className?: string }) {
   return (
-    <span className={`font-brand leading-[0.9] font-bold tracking-wide text-accent uppercase ${stacked ? "inline-flex flex-col items-center" : ""} ${className}`}>
-      <span>AItunes</span>
-      {stacked ? <span>Reviews</span> : <span> Reviews</span>}
-    </span>
+    <Image
+      src={variant === "white" ? logoWhite : logo}
+      alt={SITE.name}
+      priority={variant === "color"}
+      className={`h-auto ${className}`}
+    />
   );
 }
 
@@ -23,9 +28,9 @@ export function SiteHeader() {
   return (
     <header className="border-b border-ink bg-white">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="flex justify-center py-4 sm:py-5">
+        <div className="flex justify-center py-3 sm:py-4">
           <Link href="/" aria-label={`${SITE.name} home`}>
-            <Logo stacked className="text-3xl sm:text-4xl" />
+            <Logo className="w-40 sm:w-52" />
           </Link>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line py-2.5">
@@ -59,7 +64,7 @@ export function SiteFooter() {
     <footer className="mt-12 bg-header text-[13px] text-white/60">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <Logo stacked className="text-xl !text-white" />
+          <Logo variant="white" className="w-24" />
           <span>{SITE.tagline}</span>
         </div>
         <div className="flex gap-5">
