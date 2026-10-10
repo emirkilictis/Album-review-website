@@ -39,7 +39,7 @@ npm run dev                  # http://localhost:3000, admin at /admin
 2. Import the repo on [Vercel](https://vercel.com) and set these environment variables: `ADMIN_PASSWORD`, `DATABASE_URL` (`libsql://…`), `DATABASE_AUTH_TOKEN`, `NEXT_PUBLIC_SITE_URL`.
 3. Deploy. The database tables (and any columns added in later versions) are created automatically on first use.
 
-No custom domain is needed: the site runs on the free Vercel address (e.g. `https://aitunes-reviews.vercel.app`). Put that address in `NEXT_PUBLIC_SITE_URL`.
+No custom domain is needed: the site runs on the free Vercel address. On Vercel the site detects its own production address automatically; set `NEXT_PUBLIC_SITE_URL` only to override it.
 
 ## Project layout
 

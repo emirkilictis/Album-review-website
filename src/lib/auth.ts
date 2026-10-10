@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 const COOKIE_NAME = "aitunes_admin";
 const SESSION_DAYS = 7;
@@ -50,6 +51,8 @@ export async function destroySession() {
 }
 
 export async function isAdmin(): Promise<boolean> {
+  // The expiry check below reads the clock, so this must run per request.
+  await connection();
   const token = (await cookies()).get(COOKIE_NAME)?.value;
   if (!token) return false;
   const [payload, signature] = token.split(".");

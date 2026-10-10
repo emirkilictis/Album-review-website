@@ -55,7 +55,7 @@ async function ReviewContent({ params }: { params: PageProps<"/reviews/[slug]">[
 
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
         {/* Release + score, like the left half of the share card */}
-        <header className="space-y-6 text-center">
+        <header className="min-w-0 space-y-6 text-center">
           <div className="space-y-2">
             {review.featured && <EssentialTag />}
             <h1 className="headline text-4xl leading-[1.05] sm:text-5xl">{review.title}</h1>
@@ -108,7 +108,7 @@ async function ReviewContent({ params }: { params: PageProps<"/reviews/[slug]">[
 
         {/* Track scores, like the right half of the share card */}
         {review.tracks.length > 0 && (
-          <section>
+          <section className="min-w-0">
             <h2 className="border-b border-line pb-2 text-xl">Track Scores</h2>
             <ol>
               {review.tracks.map((t) => (
