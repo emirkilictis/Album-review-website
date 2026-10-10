@@ -16,6 +16,7 @@ const SIZE_CLASS = {
   sm: "h-8 min-w-10 px-1.5 text-sm",
   md: "h-11 min-w-14 px-2 text-xl",
   lg: "h-20 min-w-24 px-3 text-5xl",
+  xl: "h-28 min-w-32 px-4 text-7xl",
 } as const;
 
 /** Solid coloured score box (green / yellow / red). */

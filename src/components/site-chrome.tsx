@@ -4,7 +4,7 @@ import { SITE } from "@/lib/site";
 
 const NAV = [
   { href: "/reviews", label: "Reviews" },
-  { href: "/reviews?sort=highest", label: "Highest Rated" },
+  { href: "/rankings", label: "Rankings" },
   { href: "/artists", label: "Artists" },
   { href: "/about", label: "About" },
 ];

@@ -41,6 +41,50 @@ export async function getReviewBySlug(slug: string): Promise<ReviewWithTracks | 
   return { ...review, tracks: trackRows };
 }
 
+export type SongEntry = {
+  id: string;
+  title: string;
+  rating: number;
+  standout: boolean;
+  artist: string;
+  artistSlug: string;
+  releaseTitle: string;
+  releaseSlug: string;
+  releaseType: ReleaseType;
+  coverUrl: string | null;
+  publishedAt: string;
+};
+
+/**
+ * Every rated song: album/EP tracks with a rating, plus singles. A single with
+ * no rated track counts as one song carrying the review score.
+ */
+export async function getAllSongs(): Promise<SongEntry[]> {
+  "use cache";
+  cacheLife("max");
+  cacheTag(REVIEWS_TAG);
+  const db = await getDb();
+  const [allReviews, allTracks] = await Promise.all([getAllReviews(), db.select().from(tracks)]);
+  const tracksByReview = Map.groupBy(allTracks, (t) => t.reviewId);
+
+  return allReviews.flatMap((r) => {
+    const base = {
+      artist: r.artist,
+      artistSlug: r.artistSlug,
+      releaseTitle: r.title,
+      releaseSlug: r.slug,
+      releaseType: r.type,
+      coverUrl: r.coverUrl,
+      publishedAt: r.publishedAt,
+    };
+    const rated = (tracksByReview.get(r.id) ?? []).filter((t) => t.rating != null);
+    if (rated.length === 0 && r.type === "single") {
+      return [{ ...base, id: `r${r.id}`, title: r.title, rating: r.score, standout: false }];
+    }
+    return rated.map((t) => ({ ...base, id: `t${t.id}`, title: t.title, rating: t.rating!, standout: t.standout }));
+  });
+}
+
 export async function getArtists(): Promise<ArtistSummary[]> {
   "use cache";
   cacheLife("max");

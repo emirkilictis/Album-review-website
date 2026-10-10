@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { AlbumGrid, Cover, EmptyState, RankRow, ScoreBadge, SectionHeader } from "@/components/review-bits";
 import { excerpt, formatScore, RELEASE_TYPE_LABEL } from "@/lib/format";
-import { getAllReviews, getArtists, sortArtists } from "@/lib/queries";
+import { getAllReviews, getAllSongs, getArtists, sortArtists } from "@/lib/queries";
 import { SITE } from "@/lib/site";
 
 export default async function HomePage() {
-  const [all, artists] = await Promise.all([getAllReviews(), getArtists()]);
+  const [all, artists, songs] = await Promise.all([getAllReviews(), getArtists(), getAllSongs()]);
 
   if (all.length === 0) {
     return (
@@ -20,9 +20,13 @@ export default async function HomePage() {
   }
 
   const latest = all.slice(0, 12);
-  const topRated = all.toSorted((a, b) => b.score - a.score).slice(0, 8);
+  const topRated = all
+    .filter((r) => r.type !== "single")
+    .toSorted((a, b) => b.score - a.score)
+    .slice(0, 8);
+  const topSongs = songs.toSorted((a, b) => b.rating - a.rating).slice(0, 5);
   const essential = all.filter((r) => r.featured).slice(0, 3);
-  const topArtists = sortArtists(artists, "average").slice(0, 10);
+  const topArtists = sortArtists(artists, "average").slice(0, 5);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -32,7 +36,7 @@ export default async function HomePage() {
           <AlbumGrid reviews={latest} cols="narrow" showDate />
         </section>
         <section className="panel p-4">
-          <SectionHeader title="Highest Rated" href="/reviews?sort=highest" />
+          <SectionHeader title="Highest Rated Albums & EPs" href="/rankings" />
           <AlbumGrid reviews={topRated} cols="narrow" />
         </section>
       </div>
@@ -61,8 +65,28 @@ export default async function HomePage() {
           </section>
         )}
 
+        {topSongs.length > 0 && (
+          <section className="panel p-4">
+            <SectionHeader title="Top Songs" href="/rankings?tab=songs" />
+            <ol className="divide-y divide-line">
+              {topSongs.map((song, i) => (
+                <li key={song.id}>
+                  <RankRow
+                    rank={i + 1}
+                    href={`/reviews/${song.releaseSlug}`}
+                    cover={song.coverUrl}
+                    title={song.title}
+                    subtitle={song.artist}
+                    score={song.rating}
+                  />
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         <section className="panel p-4">
-          <SectionHeader title="Top Artists" href="/artists" />
+          <SectionHeader title="Top Artists" href="/rankings?tab=artists" />
           <ol className="divide-y divide-line">
             {topArtists.map((a, i) => (
               <li key={a.slug}>

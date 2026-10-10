@@ -7,9 +7,10 @@ Built with Next.js 16 (App Router, Cache Components), Tailwind CSS 4, Drizzle OR
 ## Features
 
 **Public site**
-- **Home**: latest reviews, highest rated, "Essential" picks and a top-artists sidebar.
+- **Home**: latest reviews, highest rated albums & EPs, "Essential" picks, top songs and top artists.
 - **Reviews archive** (`/reviews`): search by title or artist, filter by type (album / EP / single) and minimum score, sort by newest, oldest, highest, lowest, title or artist.
-- **Review page** (`/reviews/[slug]`): cover, release details, the AItunes score (0–10) with a colored bar, track average, the full review and the tracklist with a rating per track. Standout tracks get a ★.
+- **Review page** (`/reviews/[slug]`): cover, title and artist, a big AItunes score (0–10), the review, and below it the full tracklist with a rating per track. Standout tracks get a ★.
+- **Rankings** (`/rankings`): highest rated albums & EPs (filterable to albums or EPs only), highest rated songs across all album tracks, EP tracks and singles, and artists by average score. Tied scores share a rank. A single with no rated track counts as one song carrying the review score.
 - **Artists** (`/artists`): leaderboard sorted by average score, review count, name or most recently reviewed. Each artist has a page showing their average and every reviewed release.
 - **About** page with the scoring guide.
 - RSS feed (`/rss.xml`), `sitemap.xml`, `robots.txt`, Open Graph tags and schema.org `Review` JSON-LD on every review. These help with search engines, link previews and an AOTY submission.
@@ -42,7 +43,7 @@ npm run dev                  # http://localhost:3000, admin at /admin
 
 ```
 src/app/            pages (public + /admin) and route handlers (rss, api/itunes)
-src/components/     UI pieces (album blocks, score badge and bar, filter form, admin form)
+src/components/     UI pieces (album blocks, score badge and bar, ranking lists, filter form, admin form)
 src/lib/db/         Drizzle schema + client (tables auto-created)
 src/lib/queries.ts  cached public queries and sorting/filtering helpers
 src/lib/auth.ts     password check + signed session cookie
