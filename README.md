@@ -51,10 +51,14 @@ src/lib/site.ts     site name, tagline, social links
 scripts/seed.ts     demo data
 ```
 
+## Decided
+
+- Only the AItunes editors publish reviews and scores; visitors can only read them.
+- All editors share one admin password. There are no per-editor accounts or profile pages; the optional byline field on each review is enough.
+
 ## Open questions for the client
 
 - Score scale: 0–10 with one decimal (current), or 0–100 like AOTY?
-- More than one critic? If so, should each have their own byline or profile?
 - Extra release info: genres, label, streaming links?
 - Domain name, logo and brand colors.
 - Covers are linked by URL, either pasted in or filled from Apple Music. Do they also need to upload image files?
