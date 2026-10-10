@@ -55,6 +55,19 @@ function parseReview(formData: FormData) {
   const type = str("type") as ReleaseType;
   if (!RELEASE_TYPES.includes(type)) throw new ValidationError("Pick a release type.");
 
+  // Genres: comma separated, duplicates (case-insensitive) dropped.
+  const genres: string[] = [];
+  for (const raw of str("genres").split(",")) {
+    const g = raw.trim().replace(/\s+/g, " ");
+    if (g && !genres.some((x) => x.toLowerCase() === g.toLowerCase())) genres.push(g);
+  }
+  genres.splice(8);
+
+  // Streaming links: one per line.
+  const links = [...new Set(str("links").split(/\s+/).map((l) => l.trim()).filter(Boolean))];
+  const badLink = links.find((l) => !/^https?:\/\/[^\s]+\.[^\s]+/i.test(l));
+  if (badLink) throw new ValidationError(`"${badLink}" is not a valid link. Links must start with https://`);
+
   const coverUrl = str("coverUrl");
   if (coverUrl && !/^(https?:\/\/|\/)/i.test(coverUrl)) {
     throw new ValidationError("Cover URL must start with http://, https:// or /");
@@ -90,6 +103,8 @@ function parseReview(formData: FormData) {
     releaseDate: releaseDate || null,
     publishedAt,
     score: parseScore(formData.get("score"), "Score", true)!,
+    genres: JSON.stringify(genres),
+    links: JSON.stringify(links),
     summary: str("summary") || null,
     body: str("body"),
     author: str("author") || "AItunes",

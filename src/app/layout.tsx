@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Oswald, Playfair_Display } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const serif = Playfair_Display({ variable: "--font-serif-face", subsets: ["latin"], weight: ["400", "700", "900"], style: ["normal", "italic"] });
+const brand = Oswald({ variable: "--font-brand-face", subsets: ["latin"], weight: ["600", "700"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -16,10 +18,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} ${serif.variable} ${brand.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans text-sm">
         <SiteHeader />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10">{children}</main>
         <SiteFooter />
       </body>
     </html>

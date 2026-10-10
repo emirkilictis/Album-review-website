@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Cover, ScoreBadge, ScoreBar } from "@/components/review-bits";
+import { Cover, EssentialTag, ScoreBadge } from "@/components/review-bits";
 import type { ReviewWithTracks } from "@/lib/db/schema";
-import { excerpt, formatDate, formatScore, RELEASE_TYPE_LABEL } from "@/lib/format";
+import { excerpt, formatDate, formatScore, parseList, platformFor, RELEASE_TYPE_LABEL } from "@/lib/format";
 import { averageTrackRating, getReviewBySlug } from "@/lib/queries";
 import { SITE } from "@/lib/site";
 
@@ -44,99 +44,111 @@ async function ReviewContent({ params }: { params: PageProps<"/reviews/[slug]">[
 
   const trackAvg = averageTrackRating(review.tracks);
   const ratedCount = review.tracks.filter((t) => t.rating != null).length;
+  const genres = parseList(review.genres);
+  const links = parseList(review.links);
   const paragraphs = review.body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  const details = [
-    RELEASE_TYPE_LABEL[review.type],
-    review.releaseDate && `Released ${formatDate(review.releaseDate)}`,
-    review.tracks.length > 1 && `${review.tracks.length} tracks`,
-  ].filter(Boolean);
+  const year = review.releaseDate?.slice(0, 4);
 
   return (
-    <article className="panel space-y-8 p-4 sm:p-6">
+    <article className="space-y-12">
       <JsonLd review={review} />
 
-      <div className="grid gap-6 md:grid-cols-[300px_minmax(0,1fr)]">
-        <div className="self-start border border-line">
-          <Cover src={review.coverUrl} alt={`${review.title} cover`} />
-        </div>
-
-        <div className="min-w-0 space-y-5">
-          <header className="space-y-1">
-            <Link href={`/artists/${review.artistSlug}`} className="text-lg font-bold hover:text-accent hover:underline">
+      <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
+        {/* Release + score, like the left half of the share card */}
+        <header className="space-y-6 text-center">
+          <div className="space-y-2">
+            {review.featured && <EssentialTag />}
+            <h1 className="headline text-4xl leading-[1.05] sm:text-5xl">{review.title}</h1>
+            <Link href={`/artists/${review.artistSlug}`} className="inline-block text-xl hover:underline sm:text-2xl">
               {review.artist}
             </Link>
-            <h1 className="text-3xl leading-tight font-extrabold sm:text-4xl">{review.title}</h1>
-            <p className="flex flex-wrap items-center gap-x-2 text-[13px] text-muted">
-              {details.join(" · ")}
-              {review.featured && (
-                <span className="rounded-[2px] bg-accent px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase">
-                  Essential
-                </span>
-              )}
-            </p>
-          </header>
-
-          <div className="flex flex-wrap items-center gap-5 border-y border-line py-4">
-            <ScoreBadge score={review.score} size="xl" />
-            <div className="w-44">
-              <p className="text-[11px] font-bold tracking-wider text-muted uppercase">AItunes score</p>
-              <ScoreBar score={review.score} className="mt-1 !h-2" />
-              <p className="mt-1 text-[11px] text-muted">out of 10</p>
-            </div>
-            {trackAvg != null && ratedCount > 1 && (
-              <div className="border-line sm:border-l sm:pl-5">
-                <p className="text-[11px] font-bold tracking-wider text-muted uppercase">Track average</p>
-                <p className="text-2xl font-extrabold tabular-nums">{formatScore(trackAvg)}</p>
-                <p className="text-[11px] text-muted">{ratedCount} rated tracks</p>
-              </div>
+            <p className="text-[15px]">{[year, RELEASE_TYPE_LABEL[review.type]].filter(Boolean).join(" · ")}</p>
+            {genres.length > 0 && (
+              <p className="flex flex-wrap justify-center gap-1.5 pt-1">
+                {genres.map((g) => (
+                  <Link
+                    key={g}
+                    href={`/reviews?genre=${encodeURIComponent(g)}`}
+                    className="border border-line px-2 py-0.5 text-[11px] font-bold tracking-[0.1em] uppercase hover:border-ink"
+                  >
+                    {g}
+                  </Link>
+                ))}
+              </p>
             )}
           </div>
 
-          {review.summary && <p className="text-lg leading-snug font-semibold">{review.summary}</p>}
-          {paragraphs.length > 0 && (
-            <div className="space-y-4 text-[15px] leading-relaxed text-ink/90">
-              {paragraphs.map((p, i) => (
-                <p key={i} className="whitespace-pre-line">
-                  {p}
-                </p>
-              ))}
+          <div className="flex items-center justify-center gap-6 sm:gap-10">
+            <div className="w-40 shrink-0 sm:w-56">
+              <Cover src={review.coverUrl} alt={`${review.title} cover`} className="shadow-lg shadow-black/15" />
+            </div>
+            <ScoreBadge score={review.score} size="xl" />
+          </div>
+
+          {links.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {links.map((url) => {
+                const platform = platformFor(url);
+                return (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 border border-ink px-3 py-1.5 text-[12px] font-bold tracking-wide hover:bg-ink hover:text-white"
+                  >
+                    <span className="h-2 w-2 rounded-full" style={{ background: platform.color }} aria-hidden />
+                    {platform.label}
+                  </a>
+                );
+              })}
             </div>
           )}
-          <p className="text-xs text-muted">
-            By <span className="font-semibold text-ink">{review.author}</span> · {formatDate(review.publishedAt)}
-          </p>
-        </div>
+        </header>
+
+        {/* Track scores, like the right half of the share card */}
+        {review.tracks.length > 0 && (
+          <section>
+            <h2 className="border-b border-line pb-2 text-xl">Track Scores</h2>
+            <ol>
+              {review.tracks.map((t) => (
+                <li key={t.id} className="flex items-center gap-4 border-b border-line py-3">
+                  <span className="w-6 text-[13px] tabular-nums">{String(t.position).padStart(2, "0")}</span>
+                  <div className="min-w-0 flex-1 leading-tight">
+                    <p className="truncate text-[14px] font-medium uppercase" title={t.title}>
+                      {t.title}
+                      {t.standout && (
+                        <span className="ml-1.5 text-accent" title="Standout track" aria-label="Standout track">
+                          ★
+                        </span>
+                      )}
+                    </p>
+                    <p className="truncate text-[11px] text-muted">{review.artist}</p>
+                  </div>
+                  <ScoreBadge score={t.rating} size="sm" />
+                </li>
+              ))}
+            </ol>
+            <p className="mt-3 flex justify-between text-[11px] text-muted">
+              <span>{review.tracks.some((t) => t.standout) && <><span className="text-accent">★</span> Standout track</>}</span>
+              {trackAvg != null && ratedCount > 1 && <span>Track average {formatScore(trackAvg)}</span>}
+            </p>
+          </section>
+        )}
       </div>
 
-      {review.tracks.length > 0 && (
-        <section>
-          <h2 className="section-title mb-1 flex items-end justify-between">
-            <span>Tracklist</span>
-            <span className="text-[11px] font-semibold tracking-wider text-muted">Rating</span>
-          </h2>
-          <ol className="divide-y divide-line">
-            {review.tracks.map((t) => (
-              <li key={t.id} className="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-3 py-2 sm:grid-cols-[2rem_minmax(0,1fr)_12rem_auto]">
-                <span className="text-right text-[13px] text-muted tabular-nums">{t.position}</span>
-                <span className="min-w-0 truncate text-[15px]" title={t.title}>
-                  {t.title}
-                  {t.standout && (
-                    <span className="ml-1.5 text-accent" title="Standout track" aria-label="Standout track">
-                      ★
-                    </span>
-                  )}
-                </span>
-                <ScoreBar score={t.rating} className="hidden sm:block" />
-                <ScoreBadge score={t.rating} size="sm" />
-              </li>
-            ))}
-          </ol>
-          {review.tracks.some((t) => t.standout) && (
-            <p className="mt-2 text-[11px] text-muted">
-              <span className="text-accent">★</span> Standout track
+      {(review.summary || paragraphs.length > 0) && (
+        <div className="mx-auto max-w-2xl space-y-5 border-t border-ink pt-10">
+          {review.summary && <p className="font-serif text-2xl leading-snug font-bold">{review.summary}</p>}
+          {paragraphs.map((p, i) => (
+            <p key={i} className="font-serif text-[18px] leading-[1.7] whitespace-pre-line">
+              {p}
             </p>
-          )}
-        </section>
+          ))}
+          <p className="pt-2 text-[12px] font-bold tracking-[0.12em] text-muted uppercase">
+            By {review.author} · {formatDate(review.publishedAt)}
+          </p>
+        </div>
       )}
     </article>
   );
@@ -158,6 +170,8 @@ function JsonLd({ review }: { review: ReviewWithTracks }) {
       image: review.coverUrl ?? undefined,
       byArtist: { "@type": "MusicGroup", name: review.artist },
       datePublished: review.releaseDate ?? undefined,
+      genre: parseList(review.genres),
+      sameAs: parseList(review.links),
       numTracks: review.tracks.length || undefined,
     },
   };
@@ -171,12 +185,16 @@ function JsonLd({ review }: { review: ReviewWithTracks }) {
 
 function ReviewSkeleton() {
   return (
-    <div className="panel grid animate-pulse gap-6 p-6 md:grid-cols-[260px_minmax(0,1fr)]">
-      <div className="aspect-square bg-line/60" />
+    <div className="grid animate-pulse gap-10 lg:grid-cols-2">
+      <div className="space-y-4">
+        <div className="mx-auto h-12 w-2/3 bg-surface-2" />
+        <div className="mx-auto h-6 w-40 bg-surface-2" />
+        <div className="mx-auto aspect-square w-56 bg-surface-2" />
+      </div>
       <div className="space-y-3">
-        <div className="h-5 w-40 bg-line/60" />
-        <div className="h-9 w-2/3 bg-line/60" />
-        <div className="h-16 w-64 bg-line/60" />
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="h-10 bg-surface-2" />
+        ))}
       </div>
     </div>
   );

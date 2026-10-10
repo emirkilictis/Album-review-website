@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { AdminBar } from "@/components/admin/admin-bar";
 import { ReviewForm } from "@/components/admin/review-form";
 import { requireAdmin } from "@/lib/auth";
-import { getReviewForEdit } from "@/lib/queries";
+import { collectGenres, getReviewForEdit, listReviewsForAdmin } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Edit review", robots: { index: false } };
 
@@ -19,12 +19,15 @@ export default function EditReviewPage(props: PageProps<"/admin/[id]/edit">) {
 async function Content({ params }: { params: PageProps<"/admin/[id]/edit">["params"] }) {
   await requireAdmin();
   const { id } = await params;
-  const review = Number.isInteger(Number(id)) ? await getReviewForEdit(Number(id)) : null;
+  const [review, all] = await Promise.all([
+    Number.isInteger(Number(id)) ? getReviewForEdit(Number(id)) : null,
+    listReviewsForAdmin(),
+  ]);
   if (!review) notFound();
   return (
     <div>
       <AdminBar title={`Edit: ${review.title}`} />
-      <ReviewForm review={review} today={review.publishedAt} />
+      <ReviewForm review={review} today={review.publishedAt} knownGenres={collectGenres(all)} />
     </div>
   );
 }

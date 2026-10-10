@@ -1,6 +1,6 @@
-# AItunes — album review website
+# AItunes Reviews — album review website
 
-Review site for **AItunes, the AI music critic**. The critics publish reviews from a password-protected admin panel; visitors browse the archive, the review pages and the artist leaderboard. The layout follows album-database sites like AOTY: light and dense, with a score number and colored bar on every release.
+Review site for **AItunes Reviews, the AI music critic** (Pitchfork-style). The editors publish reviews from a password-protected admin panel; visitors browse the archive, the review pages and the rankings. The design matches the AItunes Reviews share cards: white page, bold italic serif titles, scores in black outlined circles and the blue logo.
 
 Built with Next.js 16 (App Router, Cache Components), Tailwind CSS 4, Drizzle ORM and SQLite/libSQL.
 
@@ -8,8 +8,8 @@ Built with Next.js 16 (App Router, Cache Components), Tailwind CSS 4, Drizzle OR
 
 **Public site**
 - **Home**: latest reviews, highest rated albums & EPs, "Essential" picks, top songs and top artists.
-- **Reviews archive** (`/reviews`): search by title or artist, filter by type (album / EP / single) and minimum score, sort by newest, oldest, highest, lowest, title or artist.
-- **Review page** (`/reviews/[slug]`): cover, title and artist, a big AItunes score (0–10), the review, and below it the full tracklist with a rating per track. Standout tracks get a ★.
+- **Reviews archive** (`/reviews`): search by title or artist, filter by type (album / EP / single), genre and minimum score, sort by newest, oldest, highest, lowest, title or artist.
+- **Review page** (`/reviews/[slug]`): laid out like the share card — title, artist, year, genres, cover and a big score circle (0–10, one decimal) on the left; "Track Scores" with a score per track on the right; "Listen on" buttons for the streaming links; the written review below. Standout tracks get a ★.
 - **Rankings** (`/rankings`): highest rated albums & EPs (filterable to albums or EPs only), highest rated songs across all album tracks, EP tracks and singles, and artists by average score. Tied scores share a rank. A single with no rated track counts as one song carrying the review score.
 - **Artists** (`/artists`): leaderboard sorted by average score, review count, name or most recently reviewed. Each artist has a page showing their average and every reviewed release.
 - **About** page with the scoring guide.
@@ -17,9 +17,9 @@ Built with Next.js 16 (App Router, Cache Components), Tailwind CSS 4, Drizzle OR
 
 **Admin panel** (`/admin`)
 - One shared password (`ADMIN_PASSWORD`). No accounts or email.
-- Create, edit and delete reviews: title, artist, type, release date, cover URL, score, summary, full text, byline, publish date and an "Essential" flag.
+- Create, edit and delete reviews: title, artist, type, release date, cover URL, genres (with one-click suggestions from earlier reviews), streaming links (paste one per line; Spotify, Apple Music, YouTube, SoundCloud, Deezer, TIDAL, Amazon Music, Bandcamp and Suno are recognised automatically), score, summary, full text, byline, publish date and an "Essential" flag.
 - Tracklist editor: add, remove and reorder tracks, rate each one, mark standouts, or paste a whole tracklist at once.
-- **Quick fill from Apple Music**: search a release to fill in the title, artist, cover, release date and tracklist automatically. It uses the public iTunes Search API, so no API key is needed.
+- **Quick fill from Apple Music**: search a release to fill in the title, artist, cover, release date, genre, Apple Music link and tracklist automatically. It uses the public iTunes Search API, so no API key is needed.
 - A review's link never changes after publishing, even if you edit the title.
 
 ## Run locally
@@ -37,7 +37,9 @@ npm run dev                  # http://localhost:3000, admin at /admin
 
 1. Create a free database on [Turso](https://turso.tech) and get its URL and an auth token.
 2. Import the repo on [Vercel](https://vercel.com) and set these environment variables: `ADMIN_PASSWORD`, `DATABASE_URL` (`libsql://…`), `DATABASE_AUTH_TOKEN`, `NEXT_PUBLIC_SITE_URL`.
-3. Deploy. The database tables are created automatically on first use.
+3. Deploy. The database tables (and any columns added in later versions) are created automatically on first use.
+
+No custom domain is needed: the site runs on the free Vercel address (e.g. `https://aitunes-reviews.vercel.app`). Put that address in `NEXT_PUBLIC_SITE_URL`.
 
 ## Project layout
 
@@ -55,10 +57,12 @@ scripts/seed.ts     demo data
 
 - Only the AItunes editors publish reviews and scores; visitors can only read them.
 - All editors share one admin password. There are no per-editor accounts or profile pages; the optional byline field on each review is enough.
+- Scores are out of 10 with one decimal (track ratings too).
+- Each review has genres and streaming-platform links.
+- No custom domain; the free `.vercel.app` address is used.
+- Design follows the AItunes Reviews share cards (Pitchfork-style).
 
 ## Open questions for the client
 
-- Score scale: 0–10 with one decimal (current), or 0–100 like AOTY?
-- Extra release info: genres, label, streaming links?
-- Domain name, logo and brand colors.
-- Covers are linked by URL, either pasted in or filled from Apple Music. Do they also need to upload image files?
+- Do they need to upload cover images as files, or are image links / Apple Music import enough?
+- Can they send the logo as an image file (PNG/SVG) to replace the text logo?

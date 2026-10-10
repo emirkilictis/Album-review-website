@@ -4,7 +4,7 @@ import { FilterForm } from "@/components/filter-form";
 import { AlbumGrid, EmptyState, GridSkeleton } from "@/components/review-bits";
 import { RELEASE_TYPES, type ReleaseType } from "@/lib/db/schema";
 import { RELEASE_TYPE_LABEL } from "@/lib/format";
-import { filterReviews, getAllReviews, REVIEW_SORTS, type ReviewSort } from "@/lib/queries";
+import { collectGenres, filterReviews, getAllReviews, REVIEW_SORTS, type ReviewSort } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Reviews archive",
@@ -15,10 +15,10 @@ const MIN_SCORES = ["0", "5", "6", "7", "8", "9"];
 
 export default function ReviewsPage(props: PageProps<"/reviews">) {
   return (
-    <div className="panel space-y-4 p-4">
-      <header>
-        <h1 className="text-2xl font-extrabold">Reviews</h1>
-        <p className="text-[13px] text-muted">Every album, EP and single reviewed by AItunes.</p>
+    <div className="space-y-6">
+      <header className="border-b border-ink pb-6 text-center">
+        <h1 className="headline text-5xl sm:text-6xl">Reviews</h1>
+        <p className="mt-2 text-[15px] text-muted">Every album, EP and single reviewed by AItunes.</p>
       </header>
       <Suspense fallback={<GridSkeleton />}>
         <Results searchParams={props.searchParams} />
@@ -37,12 +37,14 @@ async function Results({ searchParams }: { searchParams: PageProps<"/reviews">["
   const min = MIN_SCORES.includes(one(sp.min)) ? one(sp.min) : "0";
 
   const all = await getAllReviews();
-  const results = filterReviews(all, { q, type, sort, minScore: Number(min) || undefined });
+  const genres = collectGenres(all);
+  const genre = genres.find((g) => g.toLowerCase() === one(sp.genre).toLowerCase()) ?? "";
+  const results = filterReviews(all, { q, type, sort, minScore: Number(min) || undefined, genre });
 
   return (
     <div className="space-y-5">
       <FilterForm
-        key={`${q}|${type}|${min}|${sort}`}
+        key={`${q}|${type}|${genre}|${min}|${sort}`}
         action="/reviews"
         q={q}
         searchPlaceholder="Search title or artist…"
@@ -53,6 +55,16 @@ async function Results({ searchParams }: { searchParams: PageProps<"/reviews">["
             value: type,
             options: [{ value: "all", label: "All" }, ...RELEASE_TYPES.map((t) => ({ value: t, label: RELEASE_TYPE_LABEL[t] }))],
           },
+          ...(genres.length
+            ? [
+                {
+                  name: "genre",
+                  label: "Genre",
+                  value: genre,
+                  options: [{ value: "", label: "All" }, ...genres.map((g) => ({ value: g, label: g }))],
+                },
+              ]
+            : []),
           {
             name: "min",
             label: "Min score",

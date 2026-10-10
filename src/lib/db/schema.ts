@@ -15,7 +15,12 @@ export const reviews = sqliteTable(
     type: text("type", { enum: RELEASE_TYPES }).notNull().default("album"),
     releaseDate: text("release_date"),
     coverUrl: text("cover_url"),
+    /** 0–10, one decimal */
     score: real("score").notNull(),
+    /** JSON array of genre names, e.g. ["Synth-pop","Electronic"] */
+    genres: text("genres").notNull().default("[]"),
+    /** JSON array of streaming URLs (Spotify, Apple Music, YouTube…) */
+    links: text("links").notNull().default("[]"),
     summary: text("summary"),
     body: text("body").notNull().default(""),
     author: text("author").notNull().default("AItunes"),
@@ -36,6 +41,7 @@ export const tracks = sqliteTable(
       .references(() => reviews.id, { onDelete: "cascade" }),
     position: integer("position").notNull(),
     title: text("title").notNull(),
+    /** 0–10, one decimal */
     rating: real("rating"),
     standout: integer("standout", { mode: "boolean" }).notNull().default(false),
   },
@@ -59,6 +65,8 @@ export const BOOTSTRAP_SQL = [
     release_date TEXT,
     cover_url TEXT,
     score REAL NOT NULL,
+    genres TEXT NOT NULL DEFAULT '[]',
+    links TEXT NOT NULL DEFAULT '[]',
     summary TEXT,
     body TEXT NOT NULL DEFAULT '',
     author TEXT NOT NULL DEFAULT 'AItunes',
@@ -78,4 +86,11 @@ export const BOOTSTRAP_SQL = [
     standout INTEGER NOT NULL DEFAULT 0
   )`,
   `CREATE INDEX IF NOT EXISTS tracks_review_idx ON tracks (review_id)`,
+];
+
+// Columns added after the first release: [table, column, definition].
+// Added with ALTER TABLE when an older database is missing them.
+export const ADDED_COLUMNS: [string, string, string][] = [
+  ["reviews", "genres", "TEXT NOT NULL DEFAULT '[]'"],
+  ["reviews", "links", "TEXT NOT NULL DEFAULT '[]'"],
 ];

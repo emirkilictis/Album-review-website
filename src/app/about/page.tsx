@@ -14,10 +14,10 @@ const SCALE = [
 
 export default function AboutPage() {
   return (
-    <div className="panel mx-auto max-w-3xl space-y-8 p-6">
+    <div className="mx-auto max-w-2xl space-y-10">
       <header className="space-y-4">
-        <h1 className="text-3xl font-extrabold">About {SITE.name}</h1>
-        <p className="text-[15px] leading-relaxed text-muted">
+        <h1 className="headline text-5xl">About {SITE.name}</h1>
+        <p className="font-serif text-[18px] leading-[1.7]">
           {SITE.name} is a music publication dedicated to AI-generated music. We listen to every release in full and review
           albums, EPs and singles from AI music artists, with a score for the release and a rating for every track.
         </p>

@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
-/* Light, dense, utilitarian look (album-database style). */
+/* Editorial look matching the AItunes Reviews share cards: white page,
+   bold italic serif titles, black outlined score circles, blue brand. */
 @theme {
   --color-bg: #ffffff;
-  --color-page: #f3f3f3;
+  --color-page: #ffffff;
   --color-surface: #ffffff;
   --color-surface-2: #f5f5f5;
-  --color-line: #e3e3e3;
-  --color-ink: #1b1b1b;
-  --color-muted: #727272;
-  --color-header: #1d1d1f;
-  --color-accent: #5a3fd6;
-  --color-score-high: #5fb84c;
-  --color-score-mid: #e9c43f;
-  --color-score-low: #d9534f;
+  --color-line: #e4e4e4;
+  --color-ink: #111111;
+  --color-muted: #767676;
+  --color-header: #111111;
+  --color-accent: #2b21c7;
+  --color-score-low: #d0342c;
 
   --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-serif-face), Georgia, "Times New Roman", serif;
+  --font-brand: var(--font-brand-face), "Arial Narrow", sans-serif;
 }
 
 html {
@@ -28,30 +29,34 @@ body {
 }
 
 @utility section-title {
-  @apply border-b-2 border-ink pb-1.5 text-[13px] font-bold tracking-[0.08em] text-ink uppercase;
+  @apply border-b border-ink pb-2 text-[12px] font-bold tracking-[0.14em] text-ink uppercase;
+}
+
+@utility headline {
+  @apply font-serif font-black italic tracking-tight;
 }
 
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-[3px] px-3.5 py-1.5 text-[13px] font-semibold transition disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-[13px] font-bold tracking-wide transition disabled:opacity-50;
 }
 
 @layer components {
   .field {
-    @apply w-full rounded-[3px] border border-line bg-white px-2.5 py-1.5 text-sm text-ink outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-accent/20;
+    @apply w-full border border-line bg-white px-2.5 py-1.5 text-sm text-ink outline-none transition placeholder:text-muted/70 focus:border-ink focus:ring-1 focus:ring-ink;
   }
   .btn-primary {
     @apply btn bg-ink text-white hover:bg-accent;
   }
   .btn-ghost {
-    @apply btn border border-line bg-white text-ink hover:border-ink;
+    @apply btn border border-ink bg-white text-ink hover:bg-ink hover:text-white;
   }
   .btn-danger {
-    @apply btn border border-score-low/40 bg-white text-score-low hover:bg-score-low hover:text-white;
+    @apply btn border border-score-low/50 bg-white text-score-low hover:bg-score-low hover:text-white;
   }
   .panel {
-    @apply border border-line bg-surface;
+    @apply bg-surface;
   }
   .link {
-    @apply font-semibold text-ink hover:text-accent hover:underline;
+    @apply font-semibold text-ink underline decoration-line underline-offset-4 hover:decoration-ink;
   }
 }

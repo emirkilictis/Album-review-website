@@ -1,25 +1,16 @@
 import Link from "next/link";
 import type { Review } from "@/lib/db/schema";
-import { formatDate, formatScore, RELEASE_TYPE_LABEL, scoreTone } from "@/lib/format";
-
-const BOX_TONE = {
-  high: "bg-score-high text-white",
-  mid: "bg-score-mid text-ink",
-  low: "bg-score-low text-white",
-  none: "bg-surface-2 text-muted",
-} as const;
-
-const BAR_TONE = { high: "bg-score-high", mid: "bg-score-mid", low: "bg-score-low", none: "bg-line" } as const;
+import { formatDate, formatScore, parseList, RELEASE_TYPE_LABEL } from "@/lib/format";
 
 const SIZE_CLASS = {
-  xs: "h-6 min-w-8 px-1 text-xs",
-  sm: "h-8 min-w-10 px-1.5 text-sm",
-  md: "h-11 min-w-14 px-2 text-xl",
-  lg: "h-20 min-w-24 px-3 text-5xl",
-  xl: "h-28 min-w-32 px-4 text-7xl",
+  xs: "h-8 w-8 text-[11px] border",
+  sm: "h-10 w-10 text-[13px] border-[1.5px]",
+  md: "h-14 w-14 text-lg border-2",
+  lg: "h-24 w-24 text-3xl border-[3px]",
+  xl: "h-32 w-32 text-5xl border-4 sm:h-40 sm:w-40 sm:text-6xl",
 } as const;
 
-/** Solid coloured score box (green / yellow / red). */
+/** Score in a black outlined circle, like the AItunes Reviews share cards. */
 export function ScoreBadge({
   score,
   size = "sm",
@@ -31,7 +22,7 @@ export function ScoreBadge({
 }) {
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-[3px] font-extrabold tabular-nums ${BOX_TONE[scoreTone(score)]} ${SIZE_CLASS[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full border-ink bg-white font-bold tabular-nums ${score == null ? "text-muted" : "text-ink"} ${SIZE_CLASS[size]} ${className}`}
       aria-label={score == null ? "Not rated" : `Score ${formatScore(score)} out of 10`}
     >
       {formatScore(score)}
@@ -39,20 +30,11 @@ export function ScoreBadge({
   );
 }
 
-/** Thin horizontal bar showing a 0–10 score. */
-export function ScoreBar({ score, className = "" }: { score: number | null | undefined; className?: string }) {
-  return (
-    <div className={`h-1.5 overflow-hidden rounded-full bg-line ${className}`}>
-      <div className={`h-full ${BAR_TONE[scoreTone(score)]}`} style={{ width: `${(score ?? 0) * 10}%` }} />
-    </div>
-  );
-}
-
 export function Cover({ src, alt, className = "" }: { src: string | null | undefined; alt: string; className?: string }) {
   if (!src) {
     return (
       <div
-        className={`flex aspect-square w-full items-center justify-center bg-surface-2 text-3xl font-black text-muted/50 ${className}`}
+        className={`flex aspect-square w-full items-center justify-center bg-surface-2 font-serif text-4xl font-black text-muted/40 italic ${className}`}
         role="img"
         aria-label={alt}
       >
@@ -66,40 +48,35 @@ export function Cover({ src, alt, className = "" }: { src: string | null | undef
 }
 
 export function TypePill({ type }: { type: Review["type"] }) {
-  return <span className="text-[11px] font-semibold tracking-wider text-muted uppercase">{RELEASE_TYPE_LABEL[type]}</span>;
+  return <span className="text-[11px] font-bold tracking-[0.12em] text-muted uppercase">{RELEASE_TYPE_LABEL[type]}</span>;
 }
 
-/** Album tile: cover, artist, title, then score + bar underneath. */
+export function EssentialTag({ className = "" }: { className?: string }) {
+  return <span className={`text-[11px] font-bold tracking-[0.14em] text-accent uppercase ${className}`}>Essential</span>;
+}
+
+/** Album tile: cover, artist, italic title, genre/date line and score circle. */
 export function AlbumBlock({ review, showDate = false }: { review: Review; showDate?: boolean }) {
+  const genre = parseList(review.genres)[0];
   return (
     <div className="group min-w-0">
-      <Link href={`/reviews/${review.slug}`} className="relative block border border-line bg-surface-2">
-        <Cover src={review.coverUrl} alt={`${review.title} cover`} />
-        {review.featured && (
-          <span className="absolute top-1.5 left-1.5 rounded-[2px] bg-accent px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase">
-            Essential
-          </span>
-        )}
+      <Link href={`/reviews/${review.slug}`} className="block">
+        <Cover src={review.coverUrl} alt={`${review.title} cover`} className="transition group-hover:opacity-90" />
       </Link>
-      <div className="mt-1.5 space-y-0.5 leading-tight">
-        <Link href={`/artists/${review.artistSlug}`} className="block truncate text-[13px] font-bold hover:text-accent hover:underline">
-          {review.artist}
-        </Link>
-        <Link href={`/reviews/${review.slug}`} className="block truncate text-[13px] hover:text-accent hover:underline">
-          {review.title}
-        </Link>
-        {showDate && (
-          <p className="text-[11px] text-muted">
-            {RELEASE_TYPE_LABEL[review.type]} · {formatDate(review.publishedAt)}
+      <div className="mt-3 flex items-start gap-3">
+        <div className="min-w-0 flex-1 leading-snug">
+          {review.featured && <EssentialTag className="block" />}
+          <Link href={`/artists/${review.artistSlug}`} className="block truncate text-[14px] font-bold hover:underline">
+            {review.artist}
+          </Link>
+          <Link href={`/reviews/${review.slug}`} className="block truncate font-serif text-[16px] italic hover:underline">
+            {review.title}
+          </Link>
+          <p className="mt-1 truncate text-[10px] font-bold tracking-[0.12em] text-muted uppercase">
+            {[RELEASE_TYPE_LABEL[review.type], genre, showDate && formatDate(review.publishedAt)].filter(Boolean).join(" · ")}
           </p>
-        )}
-      </div>
-      <div className="mt-1.5 flex items-center gap-2">
-        <span className="w-7 text-[15px] font-extrabold tabular-nums">{formatScore(review.score)}</span>
-        <div className="flex-1">
-          <p className="text-[9px] font-semibold tracking-wider text-muted uppercase">AItunes score</p>
-          <ScoreBar score={review.score} className="mt-0.5" />
         </div>
+        <ScoreBadge score={review.score} size="sm" />
       </div>
     </div>
   );
@@ -107,11 +84,9 @@ export function AlbumBlock({ review, showDate = false }: { review: Review; showD
 
 export function AlbumGrid({ reviews, showDate, cols = "wide" }: { reviews: Review[]; showDate?: boolean; cols?: "wide" | "narrow" }) {
   const grid =
-    cols === "wide"
-      ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-      : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4";
+    cols === "wide" ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4";
   return (
-    <div className={`grid gap-x-4 gap-y-6 ${grid}`}>
+    <div className={`grid gap-x-5 gap-y-8 ${grid}`}>
       {reviews.map((r) => (
         <AlbumBlock key={r.id} review={r} showDate={showDate} />
       ))}
@@ -121,21 +96,21 @@ export function AlbumGrid({ reviews, showDate, cols = "wide" }: { reviews: Revie
 
 export function EmptyState({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="panel px-6 py-12 text-center">
-      <p className="text-base font-bold">{title}</p>
-      {children && <div className="mt-1 text-muted">{children}</div>}
+    <div className="border-y border-line px-6 py-12 text-center">
+      <p className="headline text-2xl">{title}</p>
+      {children && <div className="mt-2 text-muted">{children}</div>}
     </div>
   );
 }
 
-export function GridSkeleton({ count = 12 }: { count?: number }) {
+export function GridSkeleton({ count = 10 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       {Array.from({ length: count }, (_, i) => (
         <div key={i} className="animate-pulse space-y-2">
-          <div className="aspect-square bg-line/60" />
-          <div className="h-3 w-3/4 bg-line/60" />
-          <div className="h-3 w-1/2 bg-line/60" />
+          <div className="aspect-square bg-surface-2" />
+          <div className="h-3 w-3/4 bg-surface-2" />
+          <div className="h-3 w-1/2 bg-surface-2" />
         </div>
       ))}
     </div>
@@ -144,18 +119,18 @@ export function GridSkeleton({ count = 12 }: { count?: number }) {
 
 export function SectionHeader({ title, href, linkLabel = "View all" }: { title: string; href?: string; linkLabel?: string }) {
   return (
-    <div className="section-title mb-4 flex items-end justify-between">
+    <div className="section-title mb-5 flex items-end justify-between">
       <h2>{title}</h2>
       {href && (
-        <Link href={href} className="text-[11px] font-semibold tracking-wider text-muted hover:text-accent">
-          {linkLabel} ›
+        <Link href={href} className="text-[11px] text-muted hover:text-ink">
+          {linkLabel} →
         </Link>
       )}
     </div>
   );
 }
 
-/** Compact ranked row used in sidebars and the artist leaderboard. */
+/** Compact ranked row used in sidebars. */
 export function RankRow({
   rank,
   href,
@@ -172,13 +147,13 @@ export function RankRow({
   score: number;
 }) {
   return (
-    <Link href={href} className="flex items-center gap-3 py-2 hover:bg-surface-2">
-      <span className="w-5 text-right text-[13px] font-bold text-muted tabular-nums">{rank}</span>
-      <div className="w-11 shrink-0 border border-line">
+    <Link href={href} className="group flex items-center gap-3 py-2.5">
+      <span className="w-5 text-right text-[15px] font-bold text-muted tabular-nums">{rank}</span>
+      <div className="w-11 shrink-0">
         <Cover src={cover} alt={title} />
       </div>
       <div className="min-w-0 flex-1 leading-tight">
-        <p className="truncate text-[13px] font-bold">{title}</p>
+        <p className="truncate text-[13px] font-bold group-hover:underline">{title}</p>
         <p className="truncate text-xs text-muted">{subtitle}</p>
       </div>
       <ScoreBadge score={score} size="xs" />

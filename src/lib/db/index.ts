@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
+import { ensureSchema } from "./bootstrap";
 import * as schema from "./schema";
 
 type DB = LibSQLDatabase<typeof schema>;
@@ -22,7 +23,7 @@ function getClient(): Client {
 
 async function bootstrap(client: Client) {
   await client.execute("PRAGMA foreign_keys = ON");
-  await client.batch(schema.BOOTSTRAP_SQL, "write");
+  await ensureSchema(client);
 }
 
 /** Returns a ready-to-use Drizzle instance (tables are created on first use). */

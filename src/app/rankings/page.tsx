@@ -24,10 +24,10 @@ const LIMIT = 100;
 
 export default function RankingsPage(props: PageProps<"/rankings">) {
   return (
-    <div className="panel space-y-4 p-4">
-      <header>
-        <h1 className="text-2xl font-extrabold">Rankings</h1>
-        <p className="text-[13px] text-muted">The highest rated releases, songs and artists on AItunes.</p>
+    <div className="space-y-6">
+      <header className="border-b border-ink pb-6 text-center">
+        <h1 className="headline text-5xl sm:text-6xl">Rankings</h1>
+        <p className="mt-2 text-[15px] text-muted">The highest rated releases, songs and artists on AItunes.</p>
       </header>
       <Suspense fallback={<div className="h-96 animate-pulse bg-line/40" />}>
         <Content searchParams={props.searchParams} />
@@ -45,13 +45,13 @@ async function Content({ searchParams }: { searchParams: PageProps<"/rankings">[
 
   return (
     <div className="space-y-4">
-      <nav className="flex gap-1 border-b-2 border-ink" aria-label="Ranking type">
+      <nav className="flex justify-center gap-1" aria-label="Ranking type">
         {(Object.keys(TABS) as Tab[]).map((t) => (
           <Link
             key={t}
             href={`/rankings?tab=${t}`}
             aria-current={t === tab ? "page" : undefined}
-            className={`-mb-0.5 px-4 py-2 text-[13px] font-bold tracking-wide uppercase ${
+            className={`px-4 py-2 text-[12px] font-bold tracking-[0.14em] uppercase ${
               t === tab ? "bg-ink text-white" : "text-muted hover:text-ink"
             }`}
           >
@@ -74,7 +74,7 @@ async function Releases({ filter }: { filter: ReleaseFilter }) {
 
   return (
     <>
-      <div className="flex gap-3 text-[13px]">
+      <div className="flex justify-center gap-4 text-[13px]">
         {(Object.keys(RELEASE_FILTERS) as ReleaseFilter[]).map((f) => (
           <Link
             key={f}

@@ -13,6 +13,8 @@ type ItunesItem = {
   artworkUrl100?: string;
   releaseDate?: string;
   trackCount?: number;
+  primaryGenreName?: string;
+  collectionViewUrl?: string;
   trackName?: string;
   trackNumber?: number;
   discNumber?: number;
@@ -27,6 +29,9 @@ export type ItunesAlbum = {
   releaseDate: string | null;
   trackCount: number;
   type: "album" | "ep" | "single";
+  genre: string | null;
+  /** Apple Music page of the release */
+  url: string | null;
 };
 
 const hiRes = (url?: string) => (url ? url.replace(/\/\d+x\d+bb\./, "/1000x1000bb.") : null);
@@ -48,6 +53,8 @@ function toAlbum(item: ItunesItem): ItunesAlbum {
     releaseDate: item.releaseDate?.slice(0, 10) ?? null,
     trackCount: item.trackCount ?? 0,
     type,
+    genre: item.primaryGenreName ?? null,
+    url: item.collectionViewUrl?.replace(/[?&]uo=\d+/, "") ?? null,
   };
 }
 

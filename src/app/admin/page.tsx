@@ -27,7 +27,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
     <div>
       <AdminBar title={`Reviews (${reviews.length})`} />
       {saved && (
-        <p className="mb-6 border border-score-high/50 bg-score-high/10 px-4 py-3 text-sm text-ink">
+        <p className="mb-6 border border-ink px-4 py-3 text-sm text-ink">
           Saved!{" "}
           <Link href={`/reviews/${saved}`} className="font-semibold underline">
             View the public page →
@@ -35,7 +35,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
         </p>
       )}
       {sp.deleted && (
-        <p className="mb-6 panel px-4 py-3 text-sm text-muted">Review deleted.</p>
+        <p className="mb-6 border border-line px-4 py-3 text-sm text-muted">Review deleted.</p>
       )}
       {reviews.length === 0 ? (
         <EmptyState title="No reviews yet">
@@ -44,7 +44,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
           </Link>
         </EmptyState>
       ) : (
-        <ul className="divide-y divide-line panel">
+        <ul className="divide-y divide-line border-y border-line">
           {reviews.map((r) => (
             <li key={r.id} className="flex flex-wrap items-center gap-4 p-3 sm:flex-nowrap">
               <Cover src={r.coverUrl} alt={r.title} className="!w-12 shrink-0" />

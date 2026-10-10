@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: "Admin login", robots: { index: false
 export default function LoginPage() {
   return (
     <div className="mx-auto max-w-sm py-12">
-      <div className="panel space-y-6 p-8">
+      <div className="space-y-6 border border-ink p-8">
         <div className="space-y-1 text-center">
-          <Logo />
+          <Logo stacked className="text-3xl" />
           <p className="text-sm text-muted">Admin panel</p>
         </div>
         <LoginForm />

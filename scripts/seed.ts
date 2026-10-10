@@ -8,7 +8,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createClient } from "@libsql/client";
-import { BOOTSTRAP_SQL } from "../src/lib/db/schema";
+import { ensureSchema } from "../src/lib/db/bootstrap";
 import { slugify } from "../src/lib/format";
 
 type Demo = {
@@ -19,6 +19,7 @@ type Demo = {
   releaseDate: string;
   publishedAt: string;
   featured?: boolean;
+  genres: string[];
   summary: string;
   body: string;
   colors: [string, string, string];
@@ -28,6 +29,7 @@ type Demo = {
 const DEMO: Demo[] = [
   {
     title: "Neon Requiem",
+    genres: ["Synth-pop", "Dream Pop"],
     artist: "Aurora Vector",
     type: "album",
     score: 8.7,
@@ -49,6 +51,7 @@ const DEMO: Demo[] = [
   },
   {
     title: "Silicon Summer",
+    genres: ["Electropop", "Pop"],
     artist: "Lumen Drift",
     type: "ep",
     score: 7.4,
@@ -67,6 +70,7 @@ const DEMO: Demo[] = [
   },
   {
     title: "Ghost in the Chorus",
+    genres: ["Synth-pop"],
     artist: "Aurora Vector",
     type: "single",
     score: 9.1,
@@ -79,6 +83,7 @@ const DEMO: Demo[] = [
   },
   {
     title: "Error 404: Heart Not Found",
+    genres: ["Hyperpop", "Electropop"],
     artist: "Byte Romance",
     type: "album",
     score: 5.6,
@@ -98,6 +103,7 @@ const DEMO: Demo[] = [
   },
   {
     title: "Midnight Algorithms",
+    genres: ["Alternative R&B"],
     artist: "Nova Synthetica",
     type: "album",
     score: 8.2,
@@ -116,6 +122,7 @@ const DEMO: Demo[] = [
   },
   {
     title: "Dial-Up Dreams",
+    genres: ["Hyperpop"],
     artist: "Byte Romance",
     type: "single",
     score: 6.8,
@@ -149,7 +156,7 @@ async function main() {
     url: process.env.DATABASE_URL ?? "file:local.db",
     authToken: process.env.DATABASE_AUTH_TOKEN,
   });
-  await client.batch(BOOTSTRAP_SQL, "write");
+  await ensureSchema(client);
 
   if (reset) {
     await client.batch(["DELETE FROM tracks", "DELETE FROM reviews"], "write");
@@ -169,8 +176,8 @@ async function main() {
     const slug = slugify(`${d.artist} ${d.title}`);
     writeFileSync(join(coverDir, `${slug}.svg`), coverSvg(d.colors, i + 1));
     const res = await client.execute({
-      sql: `INSERT INTO reviews (slug, title, artist, artist_slug, type, release_date, cover_url, score, summary, body, featured, published_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+      sql: `INSERT INTO reviews (slug, title, artist, artist_slug, type, release_date, cover_url, score, genres, links, summary, body, featured, published_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
       args: [
         slug,
         d.title,
@@ -180,6 +187,9 @@ async function main() {
         d.releaseDate,
         `/demo-covers/${slug}.svg`,
         d.score,
+        JSON.stringify(d.genres),
+        // Placeholder links (the artists are made up).
+        JSON.stringify(["https://open.spotify.com/", "https://music.apple.com/", "https://www.youtube.com/"]),
         d.summary,
         d.body,
         d.featured ? 1 : 0,

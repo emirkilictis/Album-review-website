@@ -1,6 +1,7 @@
 import "server-only";
 import { asc, desc, eq } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
+import { parseList } from "./format";
 import { getDb } from "./db";
 import { reviews, tracks, type Review, type ReviewWithTracks, type ReleaseType } from "./db/schema";
 
@@ -116,13 +117,15 @@ export const REVIEW_SORTS = {
 } as const;
 export type ReviewSort = keyof typeof REVIEW_SORTS;
 
-export type ReviewFilters = { q?: string; type?: ReleaseType | "all"; sort?: ReviewSort; minScore?: number };
+export type ReviewFilters = { q?: string; type?: ReleaseType | "all"; sort?: ReviewSort; minScore?: number; genre?: string };
 
 export function filterReviews(list: Review[], filters: ReviewFilters): Review[] {
   const q = filters.q?.trim().toLowerCase();
+  const genre = filters.genre?.trim().toLowerCase();
   let out = list.filter((r) => {
     if (filters.type && filters.type !== "all" && r.type !== filters.type) return false;
     if (filters.minScore != null && r.score < filters.minScore) return false;
+    if (genre && !parseList(r.genres).some((g) => g.toLowerCase() === genre)) return false;
     if (q && !`${r.title} ${r.artist}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -147,6 +150,20 @@ export function filterReviews(list: Review[], filters: ReviewFilters): Review[] 
       out = out.toSorted((a, b) => byDate(b, a));
   }
   return out;
+}
+
+/** Every genre used across reviews, most used first. */
+export function collectGenres(list: Review[]): string[] {
+  const counts = new Map<string, { name: string; n: number }>();
+  for (const r of list) {
+    for (const g of parseList(r.genres)) {
+      const key = g.toLowerCase();
+      const entry = counts.get(key);
+      if (entry) entry.n++;
+      else counts.set(key, { name: g, n: 1 });
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.n - a.n || a.name.localeCompare(b.name)).map((e) => e.name);
 }
 
 export const ARTIST_SORTS = {

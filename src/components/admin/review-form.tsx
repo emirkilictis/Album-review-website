@@ -5,14 +5,23 @@ import { saveReview } from "@/app/admin/actions";
 import type { ItunesAlbum } from "@/app/api/itunes/route";
 import { Cover, ScoreBadge } from "@/components/review-bits";
 import type { ReleaseType, ReviewWithTracks } from "@/lib/db/schema";
-import { RELEASE_TYPE_LABEL } from "@/lib/format";
+import { parseList, platformFor, RELEASE_TYPE_LABEL } from "@/lib/format";
 
 type TrackRow = { key: number; title: string; rating: string; standout: boolean };
 
 let nextKey = 1;
 const row = (title = "", rating = "", standout = false): TrackRow => ({ key: nextKey++, title, rating, standout });
 
-export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today: string }) {
+export function ReviewForm({
+  review,
+  today,
+  knownGenres = [],
+}: {
+  review?: ReviewWithTracks;
+  today: string;
+  /** Genres already used on other reviews, offered as one-click suggestions. */
+  knownGenres?: string[];
+}) {
   const [state, action, pending] = useActionState(saveReview, undefined);
 
   // All fields are controlled so nothing is lost if the server returns a validation error.
@@ -23,6 +32,8 @@ export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today
     releaseDate: review?.releaseDate ?? "",
     publishedAt: review?.publishedAt ?? today,
     coverUrl: review?.coverUrl ?? "",
+    genres: parseList(review?.genres).join(", "),
+    links: parseList(review?.links).join("\n"),
     score: review ? String(review.score) : "",
     summary: review?.summary ?? "",
     body: review?.body ?? "",
@@ -59,11 +70,16 @@ export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today
       type: album.type,
       releaseDate: album.releaseDate ?? prev.releaseDate,
       coverUrl: album.coverUrl ?? prev.coverUrl,
+      genres: prev.genres || (album.genre ?? ""),
+      links: album.url && !prev.links.includes(album.url) ? [prev.links, album.url].filter(Boolean).join("\n") : prev.links,
     }));
     if (titles.length) setTrackRows(titles.map((t) => row(t)));
   };
 
   const scoreNum = Number(f.score.replace(",", "."));
+  const currentGenres = f.genres.split(",").map((g) => g.trim().toLowerCase()).filter(Boolean);
+  const addGenre = (g: string) => set("genres", [f.genres.trim().replace(/,$/, ""), g].filter(Boolean).join(", "));
+  const linkList = f.links.split(/\s+/).filter(Boolean);
 
   return (
     <div className="space-y-8">
@@ -103,6 +119,48 @@ export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today
                   className="field"
                 />
               </Field>
+              <Field label="Genres" hint="Separate with commas, e.g. Synth-pop, Electronic" className="sm:col-span-2">
+                <input name="genres" value={f.genres} onChange={(e) => set("genres", e.target.value)} placeholder="Synth-pop, Electronic" className="field" />
+              </Field>
+              {knownGenres.some((g) => !currentGenres.includes(g.toLowerCase())) && (
+                <div className="-mt-2 flex flex-wrap gap-1.5 sm:col-span-2">
+                  {knownGenres
+                    .filter((g) => !currentGenres.includes(g.toLowerCase()))
+                    .map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => addGenre(g)}
+                        className="rounded-full border border-line px-2.5 py-0.5 text-xs text-muted hover:border-ink hover:text-ink"
+                      >
+                        + {g}
+                      </button>
+                    ))}
+                </div>
+              )}
+              <Field
+                label="Listen links"
+                hint="Paste one link per line (Spotify, Apple Music, YouTube, SoundCloud…). The platform is detected automatically."
+                className="sm:col-span-2"
+              >
+                <textarea
+                  name="links"
+                  rows={3}
+                  value={f.links}
+                  onChange={(e) => set("links", e.target.value)}
+                  placeholder={"https://open.spotify.com/album/…\nhttps://music.apple.com/…"}
+                  className="field font-mono text-xs"
+                />
+              </Field>
+              {linkList.length > 0 && (
+                <div className="-mt-2 flex flex-wrap gap-1.5 sm:col-span-2">
+                  {linkList.map((l) => (
+                    <span key={l} className="rounded-[3px] bg-surface-2 px-2 py-0.5 text-xs font-semibold">
+                      ✓ {platformFor(l).label}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </Section>
 
@@ -141,7 +199,7 @@ export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today
         </div>
 
         <aside className="space-y-5 lg:sticky lg:top-24 lg:h-fit">
-          <div className="panel">
+          <div className="border border-line">
             <Cover src={f.coverUrl || null} alt={f.title || "Cover"} />
             <div className="flex items-center justify-between gap-3 p-4">
               <div className="min-w-0">
@@ -151,7 +209,7 @@ export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today
               <ScoreBadge score={f.score && Number.isFinite(scoreNum) ? scoreNum : null} size="sm" />
             </div>
           </div>
-          <div className="panel space-y-4 p-4">
+          <div className="space-y-4 border border-line p-4">
             <Field label="Publish date">
               <input type="date" name="publishedAt" value={f.publishedAt} onChange={(e) => set("publishedAt", e.target.value)} className="field" />
             </Field>
@@ -177,7 +235,7 @@ export function ReviewForm({ review, today }: { review?: ReviewWithTracks; today
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="panel space-y-4 p-4">
+    <section className="space-y-4 border border-line p-4">
       <h2 className="section-title">{title}</h2>
       {children}
     </section>

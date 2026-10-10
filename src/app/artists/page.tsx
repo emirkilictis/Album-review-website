@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 
 export default function ArtistsPage(props: PageProps<"/artists">) {
   return (
-    <div className="panel space-y-4 p-4">
-      <header>
-        <h1 className="text-2xl font-extrabold">Artists</h1>
-        <p className="text-[13px] text-muted">Ranked by the average score of all their reviewed releases.</p>
+    <div className="space-y-6">
+      <header className="border-b border-ink pb-6 text-center">
+        <h1 className="headline text-5xl sm:text-6xl">Artists</h1>
+        <p className="mt-2 text-[15px] text-muted">Ranked by the average score of all their reviewed releases.</p>
       </header>
       <Suspense fallback={<div className="h-96 animate-pulse bg-line/40" />}>
         <Leaderboard searchParams={props.searchParams} />

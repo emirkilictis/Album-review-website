@@ -9,40 +9,46 @@ const NAV = [
   { href: "/about", label: "About" },
 ];
 
-export function Logo({ className = "" }: { className?: string }) {
+/** Text version of the AItunes Reviews logo. Swap for the real logo image when we have it. */
+export function Logo({ className = "", stacked = false }: { className?: string; stacked?: boolean }) {
   return (
-    <span className={`text-[22px] leading-none font-black tracking-tight ${className}`}>
-      <span className="rounded-[3px] bg-accent px-1 text-white">AI</span>tunes
+    <span className={`font-brand leading-[0.9] font-bold tracking-wide text-accent uppercase ${stacked ? "inline-flex flex-col items-center" : ""} ${className}`}>
+      <span>AItunes</span>
+      {stacked ? <span>Reviews</span> : <span> Reviews</span>}
     </span>
   );
 }
 
 export function SiteHeader() {
   return (
-    <header className="bg-header text-white">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-        <Link href="/" aria-label={`${SITE.name} home`}>
-          <Logo />
-        </Link>
-        <nav className="order-3 flex w-full gap-4 overflow-x-auto text-[13px] font-semibold sm:order-none sm:w-auto">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="whitespace-nowrap text-white/75 hover:text-white">
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <Form action="/reviews" className="ml-auto">
-          <label className="sr-only" htmlFor="site-search">
-            Search
-          </label>
-          <input
-            id="site-search"
-            type="search"
-            name="q"
-            placeholder="Search artists & releases"
-            className="w-44 rounded-[3px] border border-white/15 bg-white/10 px-2.5 py-1.5 text-[13px] text-white outline-none placeholder:text-white/50 focus:bg-white focus:text-ink sm:w-64"
-          />
-        </Form>
+    <header className="border-b border-ink bg-white">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="flex justify-center py-4 sm:py-5">
+          <Link href="/" aria-label={`${SITE.name} home`}>
+            <Logo stacked className="text-3xl sm:text-4xl" />
+          </Link>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line py-2.5">
+          <nav className="flex gap-5 overflow-x-auto text-[12px] font-bold tracking-[0.14em] uppercase">
+            {NAV.map((item) => (
+              <Link key={item.href} href={item.href} className="whitespace-nowrap hover:text-accent">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <Form action="/reviews" className="ml-auto w-full sm:w-auto">
+            <label className="sr-only" htmlFor="site-search">
+              Search
+            </label>
+            <input
+              id="site-search"
+              type="search"
+              name="q"
+              placeholder="Search artists & releases"
+              className="w-full border-0 border-b border-line bg-transparent px-0 py-1 text-[13px] outline-none placeholder:text-muted focus:border-ink sm:w-60"
+            />
+          </Form>
+        </div>
       </div>
     </header>
   );
@@ -50,13 +56,13 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="mt-10 bg-header text-[13px] text-white/60">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Logo className="text-lg text-white" />
+    <footer className="mt-12 bg-header text-[13px] text-white/60">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <Logo stacked className="text-xl !text-white" />
           <span>{SITE.tagline}</span>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-5">
           <Link href="/rss.xml" className="hover:text-white">
             RSS
           </Link>
