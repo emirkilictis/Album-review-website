@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* Light, dense, utilitarian look (album-database style). */
+@theme {
+  --color-bg: #ffffff;
+  --color-page: #f3f3f3;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f5;
+  --color-line: #e3e3e3;
+  --color-ink: #1b1b1b;
+  --color-muted: #727272;
+  --color-header: #1d1d1f;
+  --color-accent: #5a3fd6;
+  --color-score-high: #5fb84c;
+  --color-score-mid: #e9c43f;
+  --color-score-low: #d9534f;
+
+  --font-sans: var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+@utility section-title {
+  @apply border-b-2 border-ink pb-1.5 text-[13px] font-bold tracking-[0.08em] text-ink uppercase;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-[3px] px-3.5 py-1.5 text-[13px] font-semibold transition disabled:opacity-50;
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-[3px] border border-line bg-white px-2.5 py-1.5 text-sm text-ink outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-accent/20;
+  }
+  .btn-primary {
+    @apply btn bg-ink text-white hover:bg-accent;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-white text-ink hover:border-ink;
+  }
+  .btn-danger {
+    @apply btn border border-score-low/40 bg-white text-score-low hover:bg-score-low hover:text-white;
+  }
+  .panel {
+    @apply border border-line bg-surface;
+  }
+  .link {
+    @apply font-semibold text-ink hover:text-accent hover:underline;
+  }
+}
