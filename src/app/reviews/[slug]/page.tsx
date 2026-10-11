@@ -23,9 +23,9 @@ export async function generateMetadata(props: PageProps<"/reviews/[slug]">): Pro
       title,
       description,
       publishedTime: review.publishedAt,
-      images: review.coverUrl ? [{ url: review.coverUrl }] : undefined,
+      images: [{ url: `/reviews/${review.slug}/image`, width: 1600, height: 900 }],
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: { card: "summary_large_image", title, description, images: [`/reviews/${review.slug}/image`] },
   };
 }
 

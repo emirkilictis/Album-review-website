@@ -21,6 +21,7 @@ Built with Next.js 16 (App Router, Cache Components), Tailwind CSS 4, Drizzle OR
 - Tracklist editor: add, remove and reorder tracks, rate each one, mark standouts, or paste a whole tracklist at once.
 - **Quick fill from Apple Music**: search a release to fill in the title, artist, cover, release date, genre, Apple Music link and tracklist automatically. It uses the public iTunes Search API, so no API key is needed.
 - A review's link never changes after publishing, even if you edit the title.
+- **Share image**: every review has a ready-to-post image (1600×900 PNG) in the style of the AItunes post cards — title, artist, year, cover, big score, track scores and the logo. Download it with the "Image ↓" button in the admin list (or open `/reviews/<slug>/image`). It is also used as the link preview when a review is shared on X.
 
 ## Run locally
 
@@ -50,7 +51,8 @@ src/lib/db/         Drizzle schema + client (tables auto-created)
 src/lib/queries.ts  cached public queries and sorting/filtering helpers
 src/lib/auth.ts     password check + signed session cookie
 src/lib/site.ts     site name, tagline, social links
-src/assets/         logo images
+src/assets/         logo images and fonts for the share image
+src/lib/share-image.tsx  share image layout (next/og)
 scripts/seed.ts     demo data
 ```
 

@@ -31,7 +31,11 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
           Saved!{" "}
           <Link href={`/reviews/${saved}`} className="font-semibold underline">
             View the public page →
-          </Link>
+          </Link>{" "}
+          ·{" "}
+          <a href={`/reviews/${saved}/image?download=1`} className="font-semibold underline">
+            Download share image ↓
+          </a>
         </p>
       )}
       {sp.deleted && (
@@ -63,6 +67,13 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/admin">["
                 <Link href={`/reviews/${r.slug}`} className="btn-ghost px-3 py-1.5 text-xs">
                   View
                 </Link>
+                <a
+                  href={`/reviews/${r.slug}/image?download=1`}
+                  className="btn-ghost px-3 py-1.5 text-xs"
+                  title="Download an image of this review to post on X"
+                >
+                  Image ↓
+                </a>
                 <Link href={`/admin/${r.id}/edit`} className="btn-ghost px-3 py-1.5 text-xs">
                   Edit
                 </Link>
