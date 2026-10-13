@@ -10,8 +10,8 @@ Built with Next.js 16 (App Router, Cache Components), Tailwind CSS 4, Drizzle OR
 - **Home**: latest reviews, highest rated albums & EPs, "Essential" picks, top songs and top artists.
 - **Reviews archive** (`/reviews`): search by title or artist, filter by type (album / EP / single), genre and minimum score, sort by newest, oldest, highest, lowest, title or artist.
 - **Review page** (`/reviews/[slug]`): laid out like the share card — title, artist, year, genres, cover and a big score circle (0–10, one decimal) on the left; "Track Scores" with a score per track on the right; "Listen on" buttons for the streaming links; the written review below. Standout tracks get a ★.
-- **Rankings** (`/rankings`): highest rated albums & EPs (filterable to albums or EPs only), highest rated songs across all album tracks, EP tracks and singles, and artists by average score. Tied scores share a rank. A single with no rated track counts as one song carrying the review score.
-- **Artists** (`/artists`): leaderboard sorted by average score, review count, name or most recently reviewed. Each artist has a page showing their average and every reviewed release.
+- **Rankings** (`/rankings`): highest rated albums & EPs (filterable to albums or EPs only), highest rated songs across all album tracks, EP tracks and singles, and artists by average score. Tied scores share a rank. A single with no rated track counts as one song carrying the review score. The same song (same artist + title, ignoring case and quote style) on several releases — single, album, deluxe — appears once: listed under the album/EP, using the rating from the most recently reviewed release, with "also on …" links to the other releases.
+- **Artists** (`/artists`): leaderboard sorted by average score, review count, name or most recently reviewed. Each artist has a page showing their average, every reviewed release and a ranking of all their rated songs.
 - **About** page with the scoring guide.
 - RSS feed (`/rss.xml`), `sitemap.xml`, `robots.txt`, Open Graph tags and schema.org `Review` JSON-LD on every review. These help with search engines, link previews and an AOTY submission.
 

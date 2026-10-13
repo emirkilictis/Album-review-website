@@ -42,6 +42,8 @@ export async function getReviewBySlug(slug: string): Promise<ReviewWithTracks | 
   return { ...review, tracks: trackRows };
 }
 
+export type SongRelease = { title: string; slug: string; type: ReleaseType };
+
 export type SongEntry = {
   id: string;
   title: string;
@@ -49,16 +51,38 @@ export type SongEntry = {
   standout: boolean;
   artist: string;
   artistSlug: string;
+  /** The release the song is listed under (album/EP preferred over a single). */
   releaseTitle: string;
   releaseSlug: string;
   releaseType: ReleaseType;
   coverUrl: string | null;
   publishedAt: string;
+  /** Other reviewed releases with the same song (e.g. the single or a deluxe edition). */
+  alsoOn: SongRelease[];
 };
 
+/** "Don’t Stop  (feat. X)" and "don't stop (feat. x)" count as the same song title. */
+export function songKey(artistSlug: string, title: string): string {
+  const t = title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[\u2018\u2019\u02bc`´]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2010-\u2015]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+  return `${artistSlug}::${t}`;
+}
+
+const TYPE_PRIORITY: Record<ReleaseType, number> = { album: 0, ep: 1, single: 2 };
+
 /**
- * Every rated song: album/EP tracks with a rating, plus singles. A single with
- * no rated track counts as one song carrying the review score.
+ * Every rated song, once. Album/EP tracks with a rating plus singles; a single
+ * with no rated track counts as one song carrying the review score. The same
+ * song (same artist + title) on several releases — single, album, deluxe — is
+ * merged into one entry: it is listed under the album/EP (earliest first) and
+ * uses the rating from the most recently reviewed release.
  */
 export async function getAllSongs(): Promise<SongEntry[]> {
   "use cache";
@@ -68,7 +92,7 @@ export async function getAllSongs(): Promise<SongEntry[]> {
   const [allReviews, allTracks] = await Promise.all([getAllReviews(), db.select().from(tracks)]);
   const tracksByReview = Map.groupBy(allTracks, (t) => t.reviewId);
 
-  return allReviews.flatMap((r) => {
+  const occurrences = allReviews.flatMap((r) => {
     const base = {
       artist: r.artist,
       artistSlug: r.artistSlug,
@@ -77,12 +101,42 @@ export async function getAllSongs(): Promise<SongEntry[]> {
       releaseType: r.type,
       coverUrl: r.coverUrl,
       publishedAt: r.publishedAt,
+      reviewId: r.id,
     };
     const rated = (tracksByReview.get(r.id) ?? []).filter((t) => t.rating != null);
     if (rated.length === 0 && r.type === "single") {
       return [{ ...base, id: `r${r.id}`, title: r.title, rating: r.score, standout: false }];
     }
     return rated.map((t) => ({ ...base, id: `t${t.id}`, title: t.title, rating: t.rating!, standout: t.standout }));
+  });
+
+  return [...Map.groupBy(occurrences, (o) => songKey(o.artistSlug, o.title)).values()].map((group) => {
+    const listed = group.toSorted(
+      (a, b) =>
+        TYPE_PRIORITY[a.releaseType] - TYPE_PRIORITY[b.releaseType] ||
+        a.publishedAt.localeCompare(b.publishedAt) ||
+        a.reviewId - b.reviewId,
+    )[0];
+    const latest = group.reduce((a, b) =>
+      b.publishedAt > a.publishedAt || (b.publishedAt === a.publishedAt && b.reviewId > a.reviewId) ? b : a,
+    );
+    const alsoOn = [...new Map(group.filter((o) => o.reviewId !== listed.reviewId).map((o) => [o.releaseSlug, o])).values()].map(
+      (o) => ({ title: o.releaseTitle, slug: o.releaseSlug, type: o.releaseType }),
+    );
+    return {
+      id: listed.id,
+      title: listed.title,
+      rating: latest.rating,
+      standout: group.some((o) => o.standout),
+      artist: listed.artist,
+      artistSlug: listed.artistSlug,
+      releaseTitle: listed.releaseTitle,
+      releaseSlug: listed.releaseSlug,
+      releaseType: listed.releaseType,
+      coverUrl: listed.coverUrl,
+      publishedAt: latest.publishedAt,
+      alsoOn,
+    };
   });
 }
 

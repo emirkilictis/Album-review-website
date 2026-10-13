@@ -81,9 +81,24 @@ export function SongRanking({ songs, byArtist = false }: { songs: SongEntry[]; b
     <ol className="divide-y divide-line border-b border-line">
       {songs.map((s, i) => {
         const release = (
-          <Link href={`/reviews/${s.releaseSlug}`} className="hover:underline">
-            {s.releaseType === "single" ? "Single" : `From ${s.releaseTitle} (${RELEASE_TYPE_LABEL[s.releaseType]})`}
-          </Link>
+          <>
+            <Link href={`/reviews/${s.releaseSlug}`} className="hover:underline">
+              {s.releaseType === "single" ? "Single" : `From ${s.releaseTitle} (${RELEASE_TYPE_LABEL[s.releaseType]})`}
+            </Link>
+            {s.alsoOn.length > 0 && (
+              <>
+                {" · also on "}
+                {s.alsoOn.map((r, j) => (
+                  <span key={r.slug}>
+                    {j > 0 && ", "}
+                    <Link href={`/reviews/${r.slug}`} className="hover:underline">
+                      {r.type === "single" ? "the single" : r.title}
+                    </Link>
+                  </span>
+                ))}
+              </>
+            )}
+          </>
         );
         return (
           <RankedRow
