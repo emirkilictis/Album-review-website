@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ArtistTable, ReleaseRanking, SongRanking } from "@/components/rankings";
 import { EmptyState } from "@/components/review-bits";
-import { getAllReviews, getAllSongs, getArtists, sortArtists } from "@/lib/queries";
+import { getAllReviews, getAllSongs, getArtists, rankSongs, sortArtists } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Rankings",
@@ -91,9 +91,7 @@ async function Releases({ filter }: { filter: ReleaseFilter }) {
 }
 
 async function Songs() {
-  const songs = (await getAllSongs())
-    .toSorted((a, b) => b.rating - a.rating || b.publishedAt.localeCompare(a.publishedAt))
-    .slice(0, LIMIT);
+  const songs = rankSongs(await getAllSongs()).slice(0, LIMIT);
   return (
     <>
       <p className="text-[13px] text-muted">Every rated track, from albums, EPs and singles.</p>

@@ -86,6 +86,11 @@ export async function getAllSongs(): Promise<SongEntry[]> {
   });
 }
 
+/** Highest rated first; ties go to the more recently reviewed release. */
+export function rankSongs(list: SongEntry[]): SongEntry[] {
+  return list.toSorted((a, b) => b.rating - a.rating || b.publishedAt.localeCompare(a.publishedAt));
+}
+
 export async function getArtists(): Promise<ArtistSummary[]> {
   "use cache";
   cacheLife("max");

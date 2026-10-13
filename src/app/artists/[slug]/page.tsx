@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AlbumGrid, GridSkeleton, ScoreBadge } from "@/components/review-bits";
 import { formatScore, RELEASE_TYPE_LABEL } from "@/lib/format";
-import { collectGenres, getArtist } from "@/lib/queries";
+import { SongRanking } from "@/components/rankings";
+import { collectGenres, getAllSongs, getArtist, rankSongs } from "@/lib/queries";
 
 export async function generateMetadata(props: PageProps<"/artists/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
@@ -25,9 +26,10 @@ export default function ArtistPage(props: PageProps<"/artists/[slug]">) {
 
 async function ArtistContent({ params }: { params: PageProps<"/artists/[slug]">["params"] }) {
   const { slug } = await params;
-  const data = await getArtist(slug);
+  const [data, allSongs] = await Promise.all([getArtist(slug), getAllSongs()]);
   if (!data) notFound();
   const { artist, reviews } = data;
+  const songs = rankSongs(allSongs.filter((s) => s.artistSlug === slug));
   const counts = (["album", "ep", "single"] as const)
     .map((t) => [t, reviews.filter((r) => r.type === t).length] as const)
     .filter(([, n]) => n > 0);
@@ -54,6 +56,17 @@ async function ArtistContent({ params }: { params: PageProps<"/artists/[slug]">[
         <h2 className="section-title mb-5">Reviewed releases</h2>
         <AlbumGrid reviews={reviews} showDate />
       </section>
+      {songs.length > 0 && (
+        <section id="songs">
+          <h2 className="section-title mb-2 flex items-end justify-between">
+            <span>Song Ranking</span>
+            <span className="text-[11px] text-muted">
+              {songs.length} rated song{songs.length === 1 ? "" : "s"}
+            </span>
+          </h2>
+          <SongRanking songs={songs} byArtist />
+        </section>
+      )}
     </div>
   );
 }

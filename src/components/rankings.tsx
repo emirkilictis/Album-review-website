@@ -74,35 +74,43 @@ export function ReleaseRanking({ reviews }: { reviews: Review[] }) {
   );
 }
 
-export function SongRanking({ songs }: { songs: SongEntry[] }) {
+/** `byArtist` is for an artist's own page: the artist column then shows the release instead. */
+export function SongRanking({ songs, byArtist = false }: { songs: SongEntry[]; byArtist?: boolean }) {
   const ranks = competitionRanks(songs.map((s) => s.rating));
   return (
     <ol className="divide-y divide-line border-b border-line">
-      {songs.map((s, i) => (
-        <RankedRow
-          key={s.id}
-          rank={ranks[i]}
-          href={`/reviews/${s.releaseSlug}`}
-          cover={s.coverUrl}
-          primary={
-            <>
-              {s.title}
-              {s.standout && <span className="ml-1 text-accent">★</span>}
-            </>
-          }
-          secondary={
-            <Link href={`/artists/${s.artistSlug}`} className="hover:underline">
-              {s.artist}
-            </Link>
-          }
-          meta={
-            <Link href={`/reviews/${s.releaseSlug}`} className="hover:underline">
-              {s.releaseType === "single" ? "Single" : `From ${s.releaseTitle} (${RELEASE_TYPE_LABEL[s.releaseType]})`}
-            </Link>
-          }
-          score={s.rating}
-        />
-      ))}
+      {songs.map((s, i) => {
+        const release = (
+          <Link href={`/reviews/${s.releaseSlug}`} className="hover:underline">
+            {s.releaseType === "single" ? "Single" : `From ${s.releaseTitle} (${RELEASE_TYPE_LABEL[s.releaseType]})`}
+          </Link>
+        );
+        return (
+          <RankedRow
+            key={s.id}
+            rank={ranks[i]}
+            href={`/reviews/${s.releaseSlug}`}
+            cover={s.coverUrl}
+            primary={
+              <>
+                {s.title}
+                {s.standout && <span className="ml-1 text-accent">★</span>}
+              </>
+            }
+            secondary={
+              byArtist ? (
+                release
+              ) : (
+                <Link href={`/artists/${s.artistSlug}`} className="hover:underline">
+                  {s.artist}
+                </Link>
+              )
+            }
+            meta={byArtist ? undefined : release}
+            score={s.rating}
+          />
+        );
+      })}
     </ol>
   );
 }
